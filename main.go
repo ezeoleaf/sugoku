@@ -91,30 +91,27 @@ func main() {
 		}
 		conf := gridPos[g]
 		var valsGenerated []int
-		tries := 0
+		regen := false
 		for r := conf["rs"]; r <= conf["re"]; r++ {
 			for c := conf["cs"]; c <= conf["ce"]; c++ {
 				value := 0
-				condition := false
-				tries = 0
-
-				for ok := true; ok; ok = condition {
-					if tries > 9 {
-						break
-					}
-					for okVal := true; okVal; okVal = (value != 0 && contains(valsGenerated, value)) {
-						value = r1.Intn(limitNumber) + 1
-					}
-					tries++
-					condition = validateCondition(sudoku, r, c, value)
+				possibleValues := getPossibleValues(r, c, valsGenerated, sudoku)
+				if len(possibleValues) == 0 {
+					regen = true
+					break
 				}
-				if tries > 9 {
+
+				pos := r1.Intn(len(possibleValues))
+				value = possibleValues[pos]
+
+				if regen == true {
 					break
 				}
 				valsGenerated = append(valsGenerated, value)
 				sudoku[r][c] = value
 			}
-			if tries > 9 {
+
+			if regen == true {
 				g = g - 1
 				regenerate = true
 				break
@@ -125,6 +122,23 @@ func main() {
 	printSudoku(sudoku)
 	elapsed := time.Since(start)
 	log.Printf("Sugoku took %s", elapsed)
+}
+
+func getPossibleValues(r int, c int, vG []int, s sugoku) []int {
+	var vA []int // Values Available
+	for v := 1; v <= limitNumber; v++ {
+		if contains(vG, v) == true {
+			continue
+		}
+
+		if validateCondition(s, r, c, v) == true {
+			continue
+		}
+
+		vA = append(vA, v)
+	}
+
+	return vA
 }
 
 func cleanGrid(s *sugoku, sp int) {
