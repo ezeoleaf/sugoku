@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 )
@@ -68,6 +69,8 @@ var GRID_POS = map[int]map[string]int{
 }
 
 func main() {
+	start := time.Now()
+
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 
@@ -119,6 +122,8 @@ func main() {
 	}
 
 	printSudoku(sudoku)
+	elapsed := time.Since(start)
+	log.Printf("Sugoku took %s", elapsed)
 }
 
 func cleanGrid(s [LIMIT_NUMBER][LIMIT_NUMBER]int, sp int) [LIMIT_NUMBER][LIMIT_NUMBER]int {
