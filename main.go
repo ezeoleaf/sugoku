@@ -7,11 +7,12 @@ import (
 	"time"
 )
 
-const LIMIT_NUMBER = 9
-const GRID_QUANTITY = 9
-const LEN_GRID = 3
+const limitNumber int = 9
+const gridQuantity int = 9
 
-var GRID_POS = map[int]map[string]int{
+type sugoku [limitNumber][limitNumber]int
+
+var gridPos = map[int]map[string]int{
 	1: map[string]int{
 		"cs": 0, // Col Start
 		"ce": 2, // Col End
@@ -74,21 +75,21 @@ func main() {
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 
-	var sudoku [LIMIT_NUMBER][LIMIT_NUMBER]int
+	var sudoku sugoku
 	regenerate := false
 	retries := 0
-	for g := 1; g <= GRID_QUANTITY; g++ {
+	for g := 1; g <= gridQuantity; g++ {
 		if regenerate == true {
 			retries++
 			if g = g - retries; (g - retries) < 1 {
 				g = 1
 			}
-			sudoku = cleanGrid(sudoku, g)
+			cleanGrid(&sudoku, g)
 			regenerate = false
 		} else {
 			retries = 0
 		}
-		conf := GRID_POS[g]
+		conf := gridPos[g]
 		var valsGenerated []int
 		tries := 0
 		for r := conf["rs"]; r <= conf["re"]; r++ {
@@ -102,7 +103,7 @@ func main() {
 						break
 					}
 					for okVal := true; okVal; okVal = (value != 0 && contains(valsGenerated, value)) {
-						value = r1.Intn(LIMIT_NUMBER) + 1
+						value = r1.Intn(limitNumber) + 1
 					}
 					tries++
 					condition = validateCondition(sudoku, r, c, value)
@@ -126,20 +127,19 @@ func main() {
 	log.Printf("Sugoku took %s", elapsed)
 }
 
-func cleanGrid(s [LIMIT_NUMBER][LIMIT_NUMBER]int, sp int) [LIMIT_NUMBER][LIMIT_NUMBER]int {
+func cleanGrid(s *sugoku, sp int) {
 
-	for p := sp; p <= GRID_QUANTITY; p++ {
-		conf := GRID_POS[p]
+	for p := sp; p <= gridQuantity; p++ {
+		conf := gridPos[p]
 		for r := conf["rs"]; r <= conf["re"]; r++ {
 			for c := conf["cs"]; c <= conf["ce"]; c++ {
 				s[r][c] = 0
 			}
 		}
 	}
-	return s
 }
 
-func validateCondition(s [LIMIT_NUMBER][LIMIT_NUMBER]int, row int, col int, v int) bool {
+func validateCondition(s sugoku, row int, col int, v int) bool {
 	cond := false
 
 	rows := s[row]
@@ -150,7 +150,7 @@ func validateCondition(s [LIMIT_NUMBER][LIMIT_NUMBER]int, row int, col int, v in
 	}
 
 	var cols []int
-	for r := 0; r < LIMIT_NUMBER; r++ {
+	for r := 0; r < limitNumber; r++ {
 		cols = append(cols, s[r][col])
 	}
 	cond = (contains(cols, v) || cond)
@@ -166,10 +166,10 @@ func contains(s []int, e int) bool {
 	return false
 }
 
-func printSudoku(sudoku [LIMIT_NUMBER][LIMIT_NUMBER]int) {
+func printSudoku(sudoku sugoku) {
 	fmt.Println()
-	for r := 0; r < LIMIT_NUMBER; r++ {
-		for c := 0; c < LIMIT_NUMBER; c++ {
+	for r := 0; r < limitNumber; r++ {
+		for c := 0; c < limitNumber; c++ {
 			if c%3 == 0 {
 				fmt.Print(" ")
 			}
