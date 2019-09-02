@@ -1,4 +1,4 @@
-package main
+package sugoku
 
 import (
 	"fmt"
@@ -7,10 +7,23 @@ import (
 	"time"
 )
 
-const limitNumber int = 9
-const gridQuantity int = 9
+// Difficulty will be used in a const to specify different types of difficulties
+type Difficulty int
 
-type sugoku [limitNumber][limitNumber]int
+const (
+	limitNumber  int = 9
+	gridQuantity int = 9
+)
+
+// This block will have the different type of difficulties availables
+const (
+	Easy   Difficulty = 1
+	Medium Difficulty = 2
+	Hard   Difficulty = 3
+)
+
+// Sugoku represents a solved grid
+type Sugoku [limitNumber][limitNumber]int
 
 var gridPos = map[int]map[string]int{
 	1: map[string]int{
@@ -69,13 +82,14 @@ var gridPos = map[int]map[string]int{
 	},
 }
 
-func main() {
+// GenerateSugoku returns a generated grid
+func GenerateSugoku() Sugoku {
 	start := time.Now()
 
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
 
-	var sudoku sugoku
+	var sudoku Sugoku
 	regenerate := false
 	retries := 0
 	for g := 1; g <= gridQuantity; g++ {
@@ -95,7 +109,7 @@ func main() {
 		for r := conf["rs"]; r <= conf["re"]; r++ {
 			for c := conf["cs"]; c <= conf["ce"]; c++ {
 				value := 0
-				possibleValues := getPossibleValues(r, c, valsGenerated, sudoku)
+				possibleValues := getPossibleValues(r, c, valsGenerated, &sudoku)
 				if len(possibleValues) == 0 {
 					regen = true
 					break
@@ -119,12 +133,12 @@ func main() {
 		}
 	}
 
-	printSudoku(sudoku)
 	elapsed := time.Since(start)
 	log.Printf("Sugoku took %s", elapsed)
+	return sudoku
 }
 
-func getPossibleValues(r int, c int, vG []int, s sugoku) []int {
+func getPossibleValues(r int, c int, vG []int, s *Sugoku) []int {
 	var vA []int // Values Available
 	for v := 1; v <= limitNumber; v++ {
 		if contains(vG, v) == true {
@@ -141,7 +155,7 @@ func getPossibleValues(r int, c int, vG []int, s sugoku) []int {
 	return vA
 }
 
-func cleanGrid(s *sugoku, sp int) {
+func cleanGrid(s *Sugoku, sp int) {
 
 	for p := sp; p <= gridQuantity; p++ {
 		conf := gridPos[p]
@@ -153,7 +167,7 @@ func cleanGrid(s *sugoku, sp int) {
 	}
 }
 
-func validateCondition(s sugoku, row int, col int, v int) bool {
+func validateCondition(s *Sugoku, row int, col int, v int) bool {
 	cond := false
 
 	rows := s[row]
@@ -180,19 +194,27 @@ func contains(s []int, e int) bool {
 	return false
 }
 
-func printSudoku(sudoku sugoku) {
+// Solve will return the solved Sugoku
+func (s Sugoku) Solve() {
 	fmt.Println()
 	for r := 0; r < limitNumber; r++ {
 		for c := 0; c < limitNumber; c++ {
 			if c%3 == 0 {
 				fmt.Print(" ")
 			}
-			fmt.Print(sudoku[r][c], " ")
+			fmt.Print(s[r][c], " ")
 		}
 		fmt.Println()
 		if (r+1)%3 == 0 {
 			fmt.Println()
 		}
 	}
+}
 
+// Prepare will return a Sugoku ready to be played
+func (s Sugoku) Prepare(d Difficulty) {
+	if d == 0 {
+		d = Medium
+	}
+	fmt.Println(s)
 }
